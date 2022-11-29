@@ -1,7 +1,8 @@
+import config
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import config
+import os
 from model import Encoder, Decoder
 
 
@@ -19,6 +20,9 @@ class Engine:
         self.decoder = Decoder(encoded_space_dim=encoded_space_dim)
         self.num_epochs = num_epochs
 
+    def get_autoencoder(self):
+        return self.encoder, self.decoder
+
     def __train(self, dataloader, loss_fn, optimizer):
         self.encoder.train()
         self.decoder.train()
@@ -31,7 +35,7 @@ class Engine:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print('\t partial train loss (single batch): %f' % (loss.data))
+            # print('\t partial train loss (single batch): %f' % (loss.data))
             train_loss.append(loss.detach().cpu().numpy())
         return np.mean(train_loss)
 
@@ -50,20 +54,39 @@ class Engine:
             conc_out = torch.cat(conc_out)
             conc_label = torch.cat(conc_label)
             val_loss = loss_fn(conc_out, conc_label)
-        return val_loss.data
+        return val_loss.item()
 
     def train_model(self, train_dl, test_dl, loss_fn, optimizer):
+        self.encoder = self.encoder.to(self.device)
+        self.decoder = self.decoder.to(self.device)
         history = {'train_loss': [], 'val_loss': []}
+        min_loss = float('inf')
         for epoch in range(self.num_epochs):
             train_loss = self.__train(train_dl, loss_fn, optimizer)
             val_loss = self.__validate(test_dl, loss_fn)
+
             if (epoch % 5 == 0):
                 print('\n EPOCH {}/{} \t train loss{:.3f} \t val loss {:.3f}'
                       .format(epoch + 1, self.num_epochs,
                               train_loss, val_loss))
+
+            if (epoch % 10 == 0):
+                self.save_model(model_name=f'model_{epoch}')
+
+            if (min_loss > val_loss):
+                min_loss = val_loss
+                self.save_model(model_name='best')
+
             history['train_loss'].append(train_loss)
             history['val_loss'].append(val_loss)
         return history
+
+    def save_model(self, model_name=''):
+        os.makedirs('temp', exist_ok=True)
+        dest_path_encoder = os.path.join('temp', f'{model_name}_encoder.pth')
+        dest_path_decoder = os.path.join('temp', f'{model_name}_decoder.pth')
+        torch.save(self.encoder, dest_path_encoder)
+        torch.save(self.decoder, dest_path_decoder)
 
     def plot_train_loss(self, history):
         plt.figure(figsize=(10, 8))
