@@ -56,7 +56,7 @@ class Engine:
             val_loss = loss_fn(conc_out, conc_label)
         return val_loss.item()
 
-    def train_model(self, train_dl, test_dl, loss_fn, optimizer):
+    def train_model(self, model_name, train_dl, test_dl, loss_fn, optimizer):
         self.encoder = self.encoder.to(self.device)
         self.decoder = self.decoder.to(self.device)
         history = {'train_loss': [], 'val_loss': []}
@@ -71,11 +71,11 @@ class Engine:
                               train_loss, val_loss))
 
             if (epoch % 10 == 0):
-                self.save_model(model_name=f'model_{epoch}')
+                self.save_model(model_name=f'model_{model_name}_{epoch}')
 
             if (min_loss > val_loss):
                 min_loss = val_loss
-                self.save_model(model_name='best')
+                self.save_model(model_name=f'best_{model_name}')
 
             history['train_loss'].append(train_loss)
             history['val_loss'].append(val_loss)
@@ -88,10 +88,11 @@ class Engine:
         torch.save(self.encoder, dest_path_encoder)
         torch.save(self.decoder, dest_path_decoder)
 
-    def plot_train_loss(self, history):
+    def plot_train_loss(self, history, title=""):
         plt.figure(figsize=(10, 8))
         plt.semilogy(history['train_loss'], label='Train')
         plt.semilogy(history['val_loss'], label='Valid')
         plt.xlabel('Epoch')
         plt.ylabel('Average Loss')
+        plt.title(title)
         plt.show()

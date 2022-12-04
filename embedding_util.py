@@ -25,17 +25,19 @@ def get_latent_space_embeddings(data, device, encoder):
     return encoded_samples
 
 
-def visualize_embeddings_2D(x_values, y_values, labels):
+def visualize_embeddings_2D(x_values, y_values, labels, experiment_name):
     plt.figure(figsize=(17, 9))
     plt.scatter(x_values, y_values, c=labels, cmap="tab10")
     plt.colorbar()
+    plt.title(experiment_name)
     plt.show()
 
 
-def cluster_latent_space(clustering_model, embedding_df):
+def cluster_latent_space(clustering_model, embedding_df, experiment_name):
     clustering_results = clustering_model.fit_transform(
         embedding_df.drop(["label"], axis=1)
     )
     visualize_embeddings_2D(
-        clustering_results[:, 0], clustering_results[:, 1], embedding_df.label
+        clustering_results[:, 0], clustering_results[:, 1], embedding_df.label,
+        experiment_name
     )
