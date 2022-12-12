@@ -96,3 +96,18 @@ class Engine:
         plt.ylabel('Average Loss')
         plt.title(title)
         plt.show()
+
+
+class LatentSpaceEngine:
+    def __init__(self,
+                 encoded_space_dim,
+                 num_epochs=config.NUM_EPOCHS) -> None:
+        if (torch.cuda.is_available()):
+            self.device = "cuda"
+        else:
+            self.device = "cpu"
+        torch.manual_seed(0)
+        self.encoder = Encoder(encoded_space_dim=encoded_space_dim,
+                               fc2_input_dim=128)
+        self.decoder = Decoder(encoded_space_dim=encoded_space_dim)
+        self.num_epochs = num_epochs
