@@ -1,3 +1,9 @@
+'''
+@Author: Gopal Krishna, Goura Beura, Heet Sakaria
+Date: 12/15/22
+CS 7180
+'''
+
 import config
 import matplotlib.pyplot as plt
 import numpy as np

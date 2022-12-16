@@ -1,3 +1,9 @@
+'''
+@Author: Gopal Krishna, Goura Beura, Heet Sakaria
+Date: 12/15/22
+CS 7180
+'''
+
 import pandas as pd
 from tqdm import tqdm
 import torch
